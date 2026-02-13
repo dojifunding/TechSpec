@@ -1,0 +1,418 @@
+
+DOJI FUNDING
+ONE STEP CHALLENGE
+Technical Specification & Pricing Logic
+Version 2.0 | February 2026 | Developer Reference
+FAST TRACK
+"Choose Your Challenge, Define Your Success"
+ 
+Table of Contents
+1. Executive Overview	4
+1.1 Target Audience	4
+1.2 Key Differentiators	4
+2. Account Configuration	4
+2.1 Available Account Sizes	4
+2.2 Customizable Parameters	5
+2.3 Loss Calculation Types	5
+2.4 Optional Add-Ons	6
+2.5 Payout Frequency Pricing	6
+3. Pricing Engine	7
+3.1 Pricing Formula	7
+3.2 Difficulty Adjustment Rules	7
+3.3 Split Adjustment	8
+3.4 Loss Type Adjustment	8
+3.5 Equal Loss Surcharge	8
+3.6 Payout Frequency Adjustment	8
+3.7 Promo Code System	8
+3.8 Pricing Examples	9
+4. Risk Score System	11
+4.1 Risk Score Formula	11
+4.2 Risk Score Thresholds	11
+4.3 Protection Level Mapping	11
+5. Adaptive Rules Engine	11
+5.1 News Trading	11
+5.2 Weekend Holding	12
+5.3 Copy Trading	12
+5.4 EA/Bots	12
+5.5 Consistency Rule	12
+5.6 Minimum Performance Thresholds	12
+6. Payout System	12
+6.1 Payout Eligibility	12
+6.2 Payout Velocity Control	13
+6.3 Progressive Configuration Lock	13
+7. Database Schema	14
+7.1 Evaluations Table	14
+7.2 Risk Monitoring Table	14
+7.3 Promo Codes Table	15
+8. API Endpoints	15
+9. Kill Switches & Firm Protection	16
+9.1 Automated Kill Switches	16
+9.2 Configuration Cooldown	16
+10. Gamification & Trader Levels	16
+10.1 Trader Progression	16
+10.2 Achievements	16
+
+ 
+1. Executive Overview
+The One Step Challenge is Doji Funding's flagship evaluation product targeting flexible traders seeking an optimal balance between risk and reward. It features a single evaluation phase with fully customizable parameters, adaptive rules, and transparent risk-based pricing.
+1.1 Target Audience
+Intermediate to advanced traders who want speed and flexibility. The single-phase evaluation reduces time-to-funding to 5-10 days while maintaining robust risk controls.
+1.2 Key Differentiators
+Single Phase Evaluation: One target to hit, one set of rules to follow. No Phase 2 complexity.
+Full Parameter Customization: Profit target, loss limits, split, days, consistency - all adjustable with real-time price recalculation.
+Adaptive Rule Engine: News trading, weekend holding, and copy trading permissions adapt automatically based on the chosen configuration.
+Risk-Based Pricing: Easier configurations cost more; harder ones cost less. The price always reflects the firm's actual risk exposure.
+Promo Code Support: Percentage or fixed-amount discount codes with a floor at 30% of base price to prevent abuse.
+2. Account Configuration
+2.1 Available Account Sizes
+Twenty account tiers from $5,000 to $100,000 in $5,000 increments:
+
+Account Size	Base Price	Price / $1K Capital
+$5,000	$39	$7.80
+$10,000	$59	$5.90
+$15,000	$79	$5.27
+$20,000	$99	$4.95
+$25,000	$119	$4.76
+$30,000	$139	$4.63
+$35,000	$159	$4.54
+$40,000	$179	$4.47
+$45,000	$199	$4.42
+$50,000	$249	$4.98
+$55,000	$279	$5.07
+$60,000	$309	$5.15
+$65,000	$339	$5.22
+$70,000	$369	$5.27
+$75,000	$399	$5.32
+$80,000	$429	$5.36
+$85,000	$459	$5.40
+$90,000	$479	$5.32
+$95,000	$489	$5.15
+$100,000	$499	$4.99
+
+2.2 Customizable Parameters
+Every parameter below can be adjusted by the trader at purchase time. Each adjustment modifies the final price.
+
+Parameter	Range	Default	Step
+Profit Target	5% - 15%	10%	1%
+Daily Loss Limit	2% - 8%	5%	1%
+Maximum Loss Limit	4% - 12%	8%	1%
+Profit Split	50% - 90%	80%	5%
+Min Trading Days	3 - 10 days	5 days	1 day
+Consistency Rule	10% - 50%	30%	10%
+Payout Frequency	Monthly / Bi-Weekly / Weekly	Bi-Weekly	N/A
+Daily Loss Calc Type	Intraday / EOD / Static	Intraday	N/A
+Max Loss Calc Type	Intraday / EOD / Static	Intraday	N/A
+
+2.3 Loss Calculation Types
+Intraday (Cheapest): Real-time balance/equity tracking. Loss limits are monitored tick-by-tick during open market hours. Any breach triggers immediate account suspension.
+End of Day (Standard): Loss limits are evaluated at market close only. Intraday drawdowns are ignored as long as the account recovers by session end. Baseline pricing with no adjustment.
+Static (Premium): Fixed at start-of-day balance for daily loss, or initial account balance for max loss. Offers a predictable fixed reference point. Most expensive option.
+
+PRICING IMPACT: Intraday saves -$15 per loss type (daily and max calculated separately). Static adds +$25 per loss type. End of Day is the baseline with no adjustment.
+
+2.4 Optional Add-Ons
+Add-On	Price	Description
+Overnight Holding	+$19	Allows holding positions through daily market close into the next session
+Overweek Holding	+$29	Allows holding positions through the weekend. Enforces minimum 5 trading days.
+
+OVERWEEK CONSTRAINT: Enabling Overweek Holding automatically sets the minimum trading days to 5 if currently lower. This cannot be reduced while Overweek is active.
+
+2.5 Payout Frequency Pricing
+Payout frequency is a monetized parameter. Faster payout cycles carry an additional fee:
+
+Frequency	Additional Cost	Description
+Monthly	$0 (included)	Standard payout cycle, no additional cost
+Bi-Weekly	+$29	Payouts every two weeks
+Weekly	+$59	Fastest payout cycle, premium pricing
+
+WEEKLY PAYOUT CONSTRAINT: Selecting Weekly payout frequency caps the consistency rule at 30% maximum, regardless of the slider position.
+ 
+3. Pricing Engine
+3.1 Pricing Formula
+The final price is computed as:
+
+FINAL PRICE = max(
+  Base Price
+  + Difficulty Adj
+  + Split Adj
+  + Options Adj
+  + Loss Type Adj
+  + Equal Loss Surcharge
+  + Payout Frequency Adj,
+  Base Price x 0.5
+)
+
+// With promo code applied:
+PROMO PRICE = max(FINAL PRICE - Promo Discount, Base Price x 0.3)
+
+The floor price is 50% of the base price for the standard total. When a promo code is applied, the absolute floor is 30% of the base price to prevent abuse.
+3.2 Difficulty Adjustment Rules
+Difficulty adjustments reflect how easy or hard the configuration is relative to the firm's default risk profile. Easier configs cost more.
+
+Condition	Adjustment	Direction	Logic
+Profit Target < 10%	+$20 per 1% below 10%	Price increases	Lower target = easier to pass
+Profit Target > 12%	-$15 per 1% above 12%	Price decreases	Higher target = harder to pass
+Daily Loss > 5%	+$60 per 1% above 5%	Price increases	Wider daily buffer = easier
+Daily Loss < 4%	-$30 per 1% below 4%	Price decreases	Tighter daily = harder
+Max Loss > 8%	+$50 per 1% above 8%	Price increases	More room = less breach risk
+Max Loss < 6%	-$25 per 1% below 6%	Price decreases	Less room = higher breach risk
+Min Days < 5	+$15 per day below 5	Price increases	Fewer days = less data = riskier
+Consistency < 40%	-$2 per % below 40%	Price decreases	Looser consistency
+Consistency > 40%	+$2 per % above 40%	Price increases	Stricter consistency
+3.3 Split Adjustment
+The profit split adjustment is linear:
+
+splitAdjustment = (split - 70) * $4
+
+Examples:
+  Split 50% => (50 - 70) * 4 = -$80
+  Split 70% => (70 - 70) * 4 = $0
+  Split 80% => (80 - 70) * 4 = +$40
+  Split 90% => (90 - 70) * 4 = +$80
+
+NOTE: The split adjustment baseline is 70%, meaning a 70% split adds $0. The simulator range is 50-90%.
+3.4 Loss Type Adjustment
+Each loss type (daily and max) is priced independently:
+
+Loss Calc Type	Daily Loss Adj	Max Loss Adj	Combined Range
+Intraday	-$15	-$15	-$30 (cheapest)
+End of Day	$0	$0	$0 (baseline)
+Static	+$25	+$25	+$50 (premium)
+3.5 Equal Loss Surcharge
+When Daily Loss equals Max Loss (e.g., both set to 5%), the daily loss protection is effectively removed. A flat surcharge of +$100 is applied to compensate for the increased risk.
+
+WARNING: Daily Loss = Max Loss removes the daily loss safety net. The +$100 surcharge applies on top of all other adjustments.
+3.6 Payout Frequency Adjustment
+Added to the total price based on the selected payout frequency:
+
+payoutAdj = { monthly: $0, biweekly: +$29, weekly: +$59 }
+3.7 Promo Code System
+Promo codes apply a discount to the final calculated price. Two types are supported:
+
+Type	Behavior	Example
+Percentage	Discount = FINAL * (percent / 100)	DOJI20: 20% off $300 = -$60
+Fixed Amount	Discount = fixed dollar amount	TRADER50: flat $50 off
+
+promoDiscount = (type === 'percent') ? total * value / 100 : fixedValue
+promoFinal = max(total - promoDiscount, basePrice * 0.3)
+
+// Floor: 30% of base price prevents excessive discounting
+3.8 Pricing Examples
+Example 1 - Default Config ($50K):
+Account: $50,000 | Target: 10% | Daily: 5% | Max: 8%
+Split: 80% | Days: 5 | Consistency: 30%
+Loss Types: Both Intraday | No add-ons | Payout: Bi-Weekly
+
+Base Price:         $249
+Difficulty:         +$0  (target 10%: neutral zone)
+                    +$0  (daily 5%: neutral zone)
+                    +$0  (max 8%: neutral zone)
+                    -$20 (consistency 30% < 40%: -$20)
+Split Adj:          +$40 (80-70)*4
+Loss Type:          -$30 (-15 + -15)
+Equal Loss:         +$0
+Payout Freq:        +$29 (bi-weekly)
+Options:            +$0
+-------------------------------
+TOTAL:              $268
+Example 2 - Aggressive Config ($100K):
+Account: $100,000 | Target: 6% | Daily: 7% | Max: 11%
+Split: 90% | Days: 3 | Consistency: 30%
+Loss Types: Both Static | Overnight + Overweek | Payout: Weekly
+
+Base Price:         $499
+Difficulty:         +$80  (target 6% < 10%: +$80)
+                    +$120 (daily 7% > 5%: +$120)
+                    +$150 (max 11% > 8%: +$150)
+                    +$30  (days 3 < 5: +$30)
+                    -$20  (consistency 30% < 40%: -$20)
+Split Adj:          +$80  (90-70)*4
+Loss Type:          +$50  (+25 + +25) [both Static]
+Equal Loss:         +$0
+Payout Freq:        +$59  (weekly)
+Options:            +$48  (19 + 29)
+-------------------------------
+TOTAL:              $1,096
+Example 3 - Equal Loss Config ($50K):
+Account: $50,000 | Target: 10% | Daily: 5% | Max: 5%
+Split: 80% | Days: 5 | Consistency: 30%
+Loss Types: Both Intraday | No add-ons | Payout: Monthly
+
+Base Price:         $249
+Difficulty:         +$0  (target neutral)
+                    -$75 (max 5% < 6%: -$25, and 5% < 8%: total via formula)
+                    -$20 (consistency 30% < 40%: -$20)
+Split Adj:          +$40 (80-70)*4
+Loss Type:          -$30 (-15 + -15)
+Equal Loss:         +$100 (daily = max surcharge)
+Payout Freq:        +$0  (monthly)
+Options:            +$0
+-------------------------------
+TOTAL:              $264 (floor check: $249*0.5=$124.50, OK)
+ 
+4. Risk Score System
+4.1 Risk Score Formula
+The risk score quantifies how favorable the configuration is for the trader relative to the firm's risk exposure:
+
+riskScore = (profitTarget / 100) * (profitSplit / 100)
+           / ((dailyLoss / 100) * (maxLoss / 100))
+
+// Loss type multipliers:
+if (dailyLossType === 'eod')      riskScore *= 0.85
+if (maxLossType === 'eod')        riskScore *= 0.85
+if (dailyLossType === 'intraday') riskScore *= 1.10
+if (maxLossType === 'intraday')   riskScore *= 1.10
+
+NOTE: The simulator risk score formula does not include minDays in the denominator, unlike the original spec. The formula uses only target, split, dailyLoss, and maxLoss with loss type multipliers.
+4.2 Risk Score Thresholds
+Score Range	Risk Level	Actions
+< 0.5	Critical	Enhanced monitoring, reduce daily limits by 20%, manual review
+0.5 - 0.8	High Risk	Aggressive configuration warning, increased monitoring
+0.8 - 1.5	Medium Risk	Standard operations, balanced configuration
+> 1.5	Low Risk	Conservative config, enable fast payouts, scaling +2x
+4.3 Protection Level Mapping
+Risk Score	Protection Level	Firm Response
+< 0.7	Maximum	All kill switches active, most restrictive monitoring
+0.7 - 1.3	High	Standard protection suite, normal operations
+> 1.3	Moderate	Relaxed monitoring, trader-friendly features enabled
+5. Adaptive Rules Engine
+5.1 News Trading
+Condition: Allowed if Profit Target > 8%. If target is 8% or below, news trading is forbidden.
+Additional restriction: If Daily Loss > 5%, a 5-minute buffer is enforced around high-impact news events.
+5.2 Weekend Holding
+Condition: Allowed if Minimum Trading Days >= 5. If min days < 5, all positions must be closed before Friday market close.
+Overweek interaction: Enabling Overweek Holding forces min days to 5, which automatically enables weekend holding eligibility.
+5.3 Copy Trading
+Allowed with verification. Traders must declare their copy trading source, subject to correlation analysis.
+5.4 EA/Bots
+Expert Advisors and automated trading bots are allowed, except High-Frequency Trading (HFT) strategies (50+ orders/minute or latency-arbitrage).
+5.5 Consistency Rule
+No single trading day's profit can exceed X% of the total profit (where X is the configured consistency percentage). This prevents lucky trading and ensures repeatable performance.
+
+Range: 10% - 50% (default: 30%).
+Weekly payout constraint: If payout frequency is set to Weekly, the consistency rule is capped at 30% maximum.
+5.6 Minimum Performance Thresholds
+Metric	Minimum Required	Purpose
+Sharpe Ratio	0.5	Risk-adjusted return quality
+Win Rate	30%	Basic profitability filter
+Total Trades	4 x Min Trading Days	Activity and data sufficiency
+6. Payout System
+6.1 Payout Eligibility
+Parameter	Value
+Minimum Profit for Payout	2% of account balance
+Payout Frequencies Available	Monthly ($0) / Bi-Weekly (+$29) / Weekly (+$59)
+Maximum Scaling	5x after validation
+6.2 Payout Velocity Control
+maxMonthlyPayout = accountSize * (1 / riskScore) * 0.2
+
+Example: $50K account, Risk Score 1.0
+Max monthly payout = $50,000 * (1/1.0) * 0.2 = $10,000
+6.3 Progressive Configuration Lock
+Milestone	Customizable Options	Additional Restrictions
+Pre-Payout	100%	None
+After 1st Payout	75%	Max daily loss reduced by 1% from original config
+After 3rd Payout	50%	Profit target and consistency rule locked permanently
+ 
+7. Database Schema
+7.1 Evaluations Table
+CREATE TABLE evaluations (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  type ENUM('one_step') NOT NULL,
+  account_size DECIMAL NOT NULL,
+  status ENUM('active','passed','failed','funded'),
+  created_at TIMESTAMP DEFAULT NOW(),
+
+  -- Customizable Parameters
+  profit_target DECIMAL NOT NULL,         -- 5-15%
+  daily_loss DECIMAL NOT NULL,            -- 2-8%
+  max_loss DECIMAL NOT NULL,              -- 4-12%
+  profit_split DECIMAL NOT NULL,          -- 50-90%
+  min_trading_days INTEGER NOT NULL,      -- 3-10
+  consistency_rule DECIMAL NOT NULL,      -- 10-50%
+  daily_loss_type ENUM('intraday','eod','static'),
+  max_loss_type ENUM('intraday','eod','static'),
+  payout_frequency ENUM('monthly','biweekly','weekly'),
+  overnight_holding BOOLEAN DEFAULT FALSE,
+  overweek_holding BOOLEAN DEFAULT FALSE,
+
+  -- Pricing
+  base_price DECIMAL NOT NULL,
+  difficulty_adj DECIMAL DEFAULT 0,
+  split_adj DECIMAL DEFAULT 0,
+  options_adj DECIMAL DEFAULT 0,
+  loss_type_adj DECIMAL DEFAULT 0,
+  equal_loss_surcharge DECIMAL DEFAULT 0,
+  payout_freq_adj DECIMAL DEFAULT 0,
+  promo_code VARCHAR(20),
+  promo_discount DECIMAL DEFAULT 0,
+  final_price DECIMAL NOT NULL,
+
+  -- Real-time Metrics
+  risk_score DECIMAL,
+  current_balance DECIMAL,
+  peak_balance DECIMAL,
+  total_trades INTEGER DEFAULT 0,
+  profitable_days INTEGER DEFAULT 0
+);
+7.2 Risk Monitoring Table
+CREATE TABLE risk_monitoring (
+  id UUID PRIMARY KEY,
+  evaluation_id UUID REFERENCES evaluations(id),
+  timestamp TIMESTAMP DEFAULT NOW(),
+  metric_type VARCHAR(50),
+  metric_value DECIMAL,
+  alert_level ENUM('info','warning','critical'),
+  action_taken VARCHAR(255)
+);
+7.3 Promo Codes Table
+CREATE TABLE promo_codes (
+  id UUID PRIMARY KEY,
+  code VARCHAR(20) UNIQUE NOT NULL,
+  discount_type ENUM('percent','fixed') NOT NULL,
+  discount_value DECIMAL NOT NULL,
+  label VARCHAR(100),
+  is_active BOOLEAN DEFAULT TRUE,
+  max_uses INTEGER,
+  current_uses INTEGER DEFAULT 0,
+  valid_from TIMESTAMP,
+  valid_until TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+8. API Endpoints
+Method	Endpoint	Description
+POST	/api/evaluations/configure	Validate config and return real-time price calculation
+POST	/api/evaluations/purchase	Submit payment and create evaluation account
+GET	/api/evaluations/{id}/risk-score	Retrieve current risk score
+GET	/api/evaluations/{id}/metrics	Get real-time trading metrics (P&L, trades, days)
+POST	/api/evaluations/{id}/trades	Record a new trade event (webhook from platform)
+POST	/api/payouts/request	Submit a payout request for a funded account
+GET	/api/payouts/eligibility	Check if account meets payout requirements
+GET	/api/payouts/history	Retrieve payout history for a user
+POST	/api/promo/validate	Validate a promo code and return discount details
+GET	/api/promo/{code}/check	Check if a promo code is valid and active
+9. Kill Switches & Firm Protection
+9.1 Automated Kill Switches
+Trigger	Threshold	Action
+Daily Firm Loss	2% of total firm capital	HALT_ALL_TRADING - Suspend all active accounts
+Account Correlation	20+ correlated accounts	SUSPEND_ACCOUNTS - Flag for manual review
+Drawdown Cascade	30% of accounts in drawdown simultaneously	REVIEW_MODE - Restrict new account creation
+9.2 Configuration Cooldown
+7-day cooldown: After a failed evaluation, the same parameter combination cannot be repurchased for 7 days.
+Monthly limit: Maximum 3 configurations per calendar month per user.
+Post-funded change: Any configuration change after achieving funded status triggers a full evaluation reset.
+10. Gamification & Trader Levels
+10.1 Trader Progression
+Level	Duration	Restrictions	Benefits
+ROOKIE	0-3 months	Maximum restrictions	None
+TRADER	3-6 months	Standard restrictions	Unlockable options
+PRO	6-12 months	Reduced restrictions	Premium configurations
+ELITE	12+ months	Minimal restrictions	VIP conditions, priority support
+10.2 Achievements
+Achievement	Trigger	Reward
+First Payout	Complete first payout request	+5% bonus on next challenge fee
+Consistent Trader	3 consecutive profitable months	Profit split +5%
+Risk Master	Maintain risk score > 1.5 for 30 days	Challenge fees -10%
+Diamond Hands	Never enter drawdown territory	Scaling bonus unlocked
+
+--- END OF DOCUMENT ---
