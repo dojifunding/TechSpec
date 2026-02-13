@@ -1,0 +1,471 @@
+
+DOJI FUNDING
+TWO STEP CHALLENGE
+Technical Specification & Pricing Logic
+Version 2.0 | February 2026 | Developer Reference
+CLASSIC
+"Dual-Phase Evaluation with Maximum Scaling Potential"
+ 
+Table of Contents
+1. Executive Overview	1
+1.1 Target Audience	1
+1.2 Key Differentiators vs One Step	1
+2. Dual-Phase Architecture	1
+2.1 Phase Structure	1
+2.2 Phase Transition Logic	1
+3. Account Configuration	1
+3.1 Available Account Sizes & Base Prices	1
+3.2 Customizable Parameters	1
+3.3 Loss Calculation Types	1
+3.4 Loss Type Pricing (Two Step Specific)	1
+3.5 Optional Add-Ons	1
+3.6 Payout Frequency Pricing	1
+4. Pricing Engine	1
+4.1 Pricing Formula	1
+4.2 Difficulty Adjustment Rules	1
+4.3 Split Adjustment	1
+4.4 Equal Loss Surcharge	1
+4.5 Payout Frequency Adjustment	1
+4.6 Promo Code System	1
+4.7 Pricing Examples	1
+5. Risk Score System	1
+5.1 Risk Score Formula (Two Step)	1
+5.2 Risk Score Thresholds & Actions	1
+6. Trading Rules & Freedoms	1
+6.1 Maximum Freedoms	1
+6.2 Consistency Rule	1
+6.3 Minimum Performance Thresholds	1
+7. Payout & Scaling System	1
+7.1 Payout Parameters	1
+7.2 Payout Velocity Control	1
+7.3 Scaling Milestones	1
+7.4 Progressive Configuration Lock	1
+8. Database Schema	1
+8.1 Evaluations Table (Two Step Extension)	1
+8.2 Phase History Table	1
+8.3 Promo Codes Table	1
+9. API Endpoints	1
+10. Kill Switches & Firm Protection	1
+10.1 Configuration Cooldown	1
+11. Gamification & Trader Levels	1
+12. One Step vs Two Step - Quick Comparison	1
+
+ 
+1. Executive Overview
+The Two Step Challenge is Doji Funding's classic evaluation product featuring a dual-phase approach that provides the firmest trader validation. With two separate profit targets spread across two phases, it offers maximum freedoms and the highest scaling potential at 10x.
+1.1 Target Audience
+All trader levels, from beginners seeking a structured evaluation path to professionals who want the highest possible scaling ceiling and maximum trading freedoms.
+1.2 Key Differentiators vs One Step
+Dual-Phase Validation: Two separate targets provide a double filter, significantly reducing the firm's risk exposure.
+Maximum Freedoms: News trading allowed, all EA types permitted, copy trading unrestricted, all instruments available.
+10x Scaling Potential: Highest scaling ceiling of any Doji product (vs 5x for One Step, 2x for Instant).
+Lower Base Pricing at Scale: At $100K, the Two Step costs $399 vs $499 for One Step.
+Minimum 1% Payout Threshold: Most accessible payout requirement of any product.
+Promo Code Support: Percentage or fixed-amount discount codes with a floor at 30% of base price.
+2. Dual-Phase Architecture
+2.1 Phase Structure
+The evaluation is split into two sequential phases. The trader must pass Phase 1 before entering Phase 2. Both phases share the same risk parameters but have independent profit targets.
+
+Attribute	Phase 1	Phase 2
+Profit Target Range	5% - 12%	3% - 8%
+Default Target	8%	5%
+Min Trading Days	60% of total days	40% of total days
+Risk Parameters	Shared with Phase 2	Same as Phase 1
+Account Reset	N/A	Balance reset to initial if Phase 1 passed
+
+IMPORTANT: Min trading days are split 60/40 between Phase 1 and Phase 2. Example: 10 total min days = Phase 1 requires 6 days, Phase 2 requires 4 days.
+2.2 Phase Transition Logic
+// Phase 1 -> Phase 2 transition
+if (phase1.profitReached && phase1.minDaysMet
+    && phase1.consistencyPassed && phase1.noBreaches) {
+  account.balance = account.initialBalance; // Reset
+  account.phase = 2;
+  account.phase2StartDate = NOW();
+}
+
+// Phase 2 -> Funded transition
+if (phase2.profitReached && phase2.minDaysMet
+    && phase2.consistencyPassed && phase2.noBreaches) {
+  account.status = 'FUNDED';
+  account.fundedDate = NOW();
+  enablePayoutSystem(account);
+}
+3. Account Configuration
+3.1 Available Account Sizes & Base Prices
+Account Size	Base Price	Price / $1K	vs One Step
+$5,000	$69	$13.80	+$30 vs 1-Step
+$10,000	$89	$8.90	+$30 vs 1-Step
+$15,000	$109	$7.27	+$30 vs 1-Step
+$20,000	$129	$6.45	+$30 vs 1-Step
+$25,000	$149	$5.96	+$30 vs 1-Step
+$30,000	$169	$5.63	+$30 vs 1-Step
+$35,000	$189	$5.40	+$30 vs 1-Step
+$40,000	$209	$5.22	+$30 vs 1-Step
+$45,000	$229	$5.09	+$30 vs 1-Step
+$50,000	$249	$4.98	Same as 1-Step
+$55,000	$279	$5.07	Same as 1-Step
+$60,000	$309	$5.15	Same as 1-Step
+$65,000	$329	$5.06	-$10 vs 1-Step
+$70,000	$349	$4.99	-$20 vs 1-Step
+$75,000	$369	$4.92	-$30 vs 1-Step
+$80,000	$379	$4.74	-$50 vs 1-Step
+$85,000	$389	$4.58	-$70 vs 1-Step
+$90,000	$394	$4.38	-$85 vs 1-Step
+$95,000	$397	$4.18	-$92 vs 1-Step
+$100,000	$399	$3.99	-$100 vs 1-Step
+
+PRICING INSIGHT: The Two Step becomes progressively cheaper than One Step above $60K because the dual-phase filter dramatically reduces the firm's risk with larger accounts.
+3.2 Customizable Parameters
+Parameter	Range	Default	Step
+Phase 1 Profit Target	5% - 12%	8%	1%
+Phase 2 Profit Target	3% - 8%	5%	1%
+Daily Loss Limit	3% - 8%	5%	1%
+Maximum Loss Limit	6% - 15%	10%	1%
+Profit Split	70% - 90%	80%	5%
+Min Trading Days (Total)	5 - 20 days	10 days	1 day
+Consistency Rule	10% - 50%	30%	10%
+Payout Frequency	Monthly / Bi-Weekly / Weekly	Bi-Weekly	N/A
+Daily Loss Calc Type	Intraday / EOD / Static	Intraday	N/A
+Max Loss Calc Type	Intraday / EOD / Static	Intraday	N/A
+3.3 Loss Calculation Types
+Intraday (Cheapest): Real-time tick-by-tick monitoring. Breach = immediate suspension. Applies identically to both phases.
+End of Day (Standard): Limits evaluated only at market close. Intraday fluctuations ignored. Baseline pricing.
+Static (Premium): Daily loss fixed at start-of-day balance; max loss fixed at initial account balance. Most expensive option.
+3.4 Loss Type Pricing (Two Step Specific)
+Loss Calc Type	Daily Loss Adj	Max Loss Adj	Combined Range
+Intraday	-$19	-$19	-$38 (cheapest)
+End of Day	$0	$0	$0 (baseline)
+Static	+$29	+$29	+$58 (premium)
+
+NOTE: Two Step loss type adjustments are larger than One Step (-$19 vs -$15 for intraday, +$29 vs +$25 for static) because the dual-phase structure amplifies the impact over a longer evaluation period.
+3.5 Optional Add-Ons
+Add-On	Price	Description	vs One Step
+Overnight Holding	+$25	Hold through daily close	+$6 vs 1-Step ($19)
+Overweek Holding	+$39	Hold through weekends. Enforces min 5 days.	+$10 vs 1-Step ($29)
+
+OVERWEEK CONSTRAINT: Enabling Overweek Holding automatically sets the minimum trading days to 5 if currently lower.
+3.6 Payout Frequency Pricing
+Payout frequency is a monetized parameter:
+
+Frequency	Additional Cost	Description
+Monthly	$0 (included)	Standard payout cycle, no additional cost
+Bi-Weekly	+$29	Payouts every two weeks
+Weekly	+$59	Fastest payout cycle, premium pricing
+
+WEEKLY PAYOUT CONSTRAINT: Weekly payout caps the consistency rule at 30% maximum.
+ 
+4. Pricing Engine
+4.1 Pricing Formula
+The formula is identical in structure to One Step, but with different coefficients:
+
+FINAL = max(
+  Base + Difficulty + Split + Options + LossType
+  + EqualLossSurcharge + PayoutFreqAdj,
+  Base * 0.5
+)
+
+// With promo code:
+PROMO PRICE = max(FINAL - PromoDiscount, Base * 0.3)
+4.2 Difficulty Adjustment Rules
+The combined target (Phase 1 + Phase 2) is used for target-based adjustments:
+
+Condition	Adjustment	Direction	Logic
+Combined Target < 10%	+$15 per 1% below 10%	Price increases	Lower total target = easier
+Combined Target > 12%	-$10 per 1% above 12%	Price decreases	Higher total target = harder
+Daily Loss > 5%	+$50 per 1% above 5%	Price increases	Wider daily = more forgiving
+Daily Loss < 5%	-$25 per 1% below 5%	Price decreases	Tighter daily = stricter
+Max Loss > 10%	+$45 per 1% above 10%	Price increases	More drawdown room
+Max Loss < 10%	-$20 per 1% below 10%	Price decreases	Less room = harder
+Min Days < 10	+$10 per day below 10	Price increases	Fewer days = less validation
+Consistency < 45%	-$3 per % below 45%	Price decreases	Looser consistency
+Consistency > 45%	+$3 per % above 45%	Price increases	Stricter consistency
+4.3 Split Adjustment
+The split adjustment baseline for Two Step is 80% (vs 70% for One Step):
+
+splitAdjustment = (split - 80) * $6
+
+Examples:
+  Split 70% => (70 - 80) * 6 = -$60
+  Split 80% => (80 - 80) * 6 = $0
+  Split 85% => (85 - 80) * 6 = +$30
+  Split 90% => (90 - 80) * 6 = +$60
+
+NOTE: The per-percent rate is $6 for Two Step vs $4 for One Step.
+4.4 Equal Loss Surcharge
+When Daily Loss equals Max Loss, a flat surcharge of +$100 is applied (same as One Step).
+4.5 Payout Frequency Adjustment
+payoutAdj = { monthly: $0, biweekly: +$29, weekly: +$59 }
+4.6 Promo Code System
+Identical to One Step. Percentage or fixed-amount discounts. Floor at 30% of base price.
+
+promoDiscount = (type === 'percent') ? total * value / 100 : fixedValue
+promoFinal = max(total - promoDiscount, basePrice * 0.3)
+4.7 Pricing Examples
+Example 1 - Default Config ($50K):
+Account: $50,000 | P1 Target: 8% | P2 Target: 5%
+Daily: 5% | Max: 10% | Split: 80% | Days: 10 | Consistency: 30%
+Loss Types: Both Intraday | No add-ons | Payout: Bi-Weekly
+
+Combined Target = 13% (> 12%: -$10)
+Base Price:         $249
+Difficulty:         -$10 (target 13% > 12%: -$10)
+                    -$45 (consistency 30% < 45%: -$45)
+Split Adj:          +$0  (80-80)*6
+Loss Type:          -$38 (-19 + -19)
+Equal Loss:         +$0
+Payout Freq:        +$29 (bi-weekly)
+Options:            +$0
+-------------------------------
+TOTAL:              $185
+Example 2 - Conservative Config ($100K):
+Account: $100,000 | P1 Target: 10% | P2 Target: 7%
+Daily: 4% | Max: 8% | Split: 75% | Days: 15 | Consistency: 50%
+Loss Types: Both End of Day | No add-ons | Payout: Monthly
+
+Combined Target = 17% (> 12%: -$50)
+Base Price:         $399
+Difficulty:         -$50 (target 17% > 12%: -$50)
+                    -$25 (daily 4% < 5%: -$25)
+                    -$40 (max 8% < 10%: -$40)
+                    +$15 (consistency 50% > 45%: +$15)
+Split Adj:          -$30 (75-80)*6
+Loss Type:          +$0  (both EOD = baseline)
+Equal Loss:         +$0
+Payout Freq:        +$0  (monthly)
+Options:            +$0
+-------------------------------
+TOTAL:              $269
+Example 3 - Aggressive Config ($75K):
+Account: $75,000 | P1 Target: 5% | P2 Target: 3%
+Daily: 8% | Max: 15% | Split: 90% | Days: 5 | Consistency: 30%
+Loss Types: Both Static | Overnight + Overweek | Payout: Weekly
+
+Combined Target = 8% (< 10%: +$30)
+Base Price:         $369
+Difficulty:         +$30  (target 8% < 10%: +$30)
+                    +$150 (daily 8% > 5%: +$150)
+                    +$225 (max 15% > 10%: +$225)
+                    +$50  (days 5 < 10: +$50)
+                    -$45  (consistency 30% < 45%: -$45)
+Split Adj:          +$60  (90-80)*6
+Loss Type:          +$58  (+29 + +29) [both Static]
+Equal Loss:         +$0
+Payout Freq:        +$59  (weekly)
+Options:            +$64  (25 + 39)
+-------------------------------
+TOTAL:              $1,020
+ 
+5. Risk Score System
+5.1 Risk Score Formula (Two Step)
+The Two Step formula accounts for the dual-phase structure by averaging the targets:
+
+riskScore = ((target1 + target2) / 200) * (split / 100)
+           / ((dailyLoss / 100) * (maxLoss / 100))
+
+// Loss type multipliers (same as One Step):
+if (dailyLossType === 'eod')      riskScore *= 0.85
+if (maxLossType === 'eod')        riskScore *= 0.85
+if (dailyLossType === 'intraday') riskScore *= 1.10
+if (maxLossType === 'intraday')   riskScore *= 1.10
+
+NOTE: The simulator formula does not include minDays in the denominator. Only target, split, dailyLoss, maxLoss with loss type multipliers.
+5.2 Risk Score Thresholds & Actions
+Score Range	Risk Level	Protection	Actions
+< 0.5	Critical	Maximum	Enhanced monitoring, daily limits -20%, manual review
+0.5 - 0.8	High	Maximum	Aggressive config warning, extra monitoring
+0.8 - 1.5	Medium	High	Standard operations
+> 1.5	Low	Moderate	Fast payouts, scaling +2x bonus
+6. Trading Rules & Freedoms
+6.1 Maximum Freedoms
+The Two Step Challenge offers the most permissive trading environment:
+
+Feature	Status	Conditions
+News Trading	ALLOWED	5-minute buffer if daily loss > 5% AND config is flagged as risky
+Weekend Holding	ALLOWED	No restrictions (unlike One Step which requires min days >= 5)
+EA / Bots	ALLOWED	All types including semi-HFT; only pure latency-arb blocked
+Copy Trading	ALLOWED	No verification required (unlike One Step)
+All Instruments	ALLOWED	Forex, indices, commodities, crypto, metals
+Hedging	ALLOWED	Both intra-account and cross-account hedging permitted
+6.2 Consistency Rule
+Applied identically to each phase independently. No single trading day's profit can exceed X% of that phase's total profit.
+Range: 10% - 50% (default: 30%). Weekly payout caps at 30%.
+6.3 Minimum Performance Thresholds
+Metric	Min Required	Applied Per
+Sharpe Ratio	0.5	Each phase independently
+Win Rate	30%	Each phase independently
+Total Trades	4 x Phase Min Days	Each phase independently
+7. Payout & Scaling System
+7.1 Payout Parameters
+Parameter	Two Step Value	vs One Step
+Minimum Profit for Payout	1% of account balance	More accessible (vs 2%)
+Payout Frequencies	Monthly ($0) / Bi-Weekly (+$29) / Weekly (+$59)	Same pricing
+Maximum Scaling	10x after validation	2x higher (vs 5x)
+7.2 Payout Velocity Control
+maxMonthlyPayout = accountSize * (1 / riskScore) * 0.2
+
+// With 10x scaling, the effective max is much higher:
+// $100K account scaled to $1M, Risk Score 1.2:
+// Max = $1,000,000 * (1/1.2) * 0.2 = $166,667/month
+7.3 Scaling Milestones
+Milestone	Scale Factor	Account Size ($100K base)	Requirements
+Initial Funded	1x	$100,000	Pass Phase 1 + Phase 2
+After 1st month	1.5x	$150,000	Positive P&L, no breaches
+After 3 months	2.5x	$250,000	Consistent profitability
+After 6 months	5x	$500,000	Risk score > 1.0, low drawdown
+After 12 months	10x	$1,000,000	Elite trader status
+7.4 Progressive Configuration Lock
+Milestone	Customizable Options	Locked Parameters
+Pre-Payout	100%	None
+After 1st Payout	75%	Max daily loss reduced by 1%
+After 3rd Payout	50%	Both profit targets + consistency locked
+ 
+8. Database Schema
+8.1 Evaluations Table (Two Step Extension)
+CREATE TABLE evaluations_two_step (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  type ENUM('two_step') NOT NULL,
+  account_size DECIMAL NOT NULL,
+  status ENUM('phase1','phase2','passed','failed','funded'),
+  created_at TIMESTAMP DEFAULT NOW(),
+
+  -- Dual-Phase Targets
+  profit_target_1 DECIMAL NOT NULL,       -- Phase 1: 5-12%
+  profit_target_2 DECIMAL NOT NULL,       -- Phase 2: 3-8%
+  combined_target DECIMAL GENERATED ALWAYS AS
+    (profit_target_1 + profit_target_2) STORED,
+
+  -- Shared Risk Parameters
+  daily_loss DECIMAL NOT NULL,            -- 3-8%
+  max_loss DECIMAL NOT NULL,              -- 6-15%
+  profit_split DECIMAL NOT NULL,          -- 70-90%
+  min_days_total INTEGER NOT NULL,        -- 5-20
+  min_days_phase1 INTEGER GENERATED ALWAYS AS
+    (CEIL(min_days_total * 0.6)) STORED,
+  min_days_phase2 INTEGER GENERATED ALWAYS AS
+    (min_days_total - CEIL(min_days_total * 0.6)) STORED,
+  consistency_rule DECIMAL NOT NULL,      -- 10-50%
+  daily_loss_type ENUM('intraday','eod','static'),
+  max_loss_type ENUM('intraday','eod','static'),
+  payout_frequency ENUM('monthly','biweekly','weekly'),
+  overnight_holding BOOLEAN DEFAULT FALSE,
+  overweek_holding BOOLEAN DEFAULT FALSE,
+
+  -- Phase Tracking
+  current_phase INTEGER DEFAULT 1,
+  phase1_start_date TIMESTAMP,
+  phase1_end_date TIMESTAMP,
+  phase2_start_date TIMESTAMP,
+  phase2_end_date TIMESTAMP,
+  funded_date TIMESTAMP,
+
+  -- Pricing
+  base_price DECIMAL NOT NULL,
+  difficulty_adj DECIMAL DEFAULT 0,
+  split_adj DECIMAL DEFAULT 0,
+  options_adj DECIMAL DEFAULT 0,
+  loss_type_adj DECIMAL DEFAULT 0,
+  equal_loss_surcharge DECIMAL DEFAULT 0,
+  payout_freq_adj DECIMAL DEFAULT 0,
+  promo_code VARCHAR(20),
+  promo_discount DECIMAL DEFAULT 0,
+  final_price DECIMAL NOT NULL,
+
+  -- Real-time Metrics (per current phase)
+  risk_score DECIMAL,
+  current_balance DECIMAL,
+  peak_balance DECIMAL,
+  total_trades INTEGER DEFAULT 0,
+  profitable_days INTEGER DEFAULT 0,
+  scale_factor DECIMAL DEFAULT 1.0
+);
+8.2 Phase History Table
+CREATE TABLE phase_history (
+  id UUID PRIMARY KEY,
+  evaluation_id UUID REFERENCES evaluations_two_step(id),
+  phase_number INTEGER NOT NULL,          -- 1 or 2
+  start_date TIMESTAMP,
+  end_date TIMESTAMP,
+  result ENUM('passed','failed'),
+  final_balance DECIMAL,
+  total_trades INTEGER,
+  profitable_days INTEGER,
+  best_day_pct DECIMAL,
+  sharpe_ratio DECIMAL,
+  win_rate DECIMAL
+);
+8.3 Promo Codes Table
+CREATE TABLE promo_codes (
+  id UUID PRIMARY KEY,
+  code VARCHAR(20) UNIQUE NOT NULL,
+  discount_type ENUM('percent','fixed') NOT NULL,
+  discount_value DECIMAL NOT NULL,
+  label VARCHAR(100),
+  is_active BOOLEAN DEFAULT TRUE,
+  max_uses INTEGER,
+  current_uses INTEGER DEFAULT 0,
+  valid_from TIMESTAMP,
+  valid_until TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+9. API Endpoints
+All One Step endpoints apply, plus the following Two Step-specific endpoints:
+
+Method	Endpoint	Description
+POST	/api/evaluations/configure	Validate config with dual targets, return price
+POST	/api/evaluations/purchase	Create two-step evaluation account
+GET	/api/evaluations/{id}/phase-status	Get current phase, progress, and requirements
+POST	/api/evaluations/{id}/advance-phase	Trigger Phase 1 -> Phase 2 transition
+GET	/api/evaluations/{id}/phase-history	Retrieve completed phase results
+GET	/api/evaluations/{id}/risk-score	Current risk score
+GET	/api/evaluations/{id}/scaling	Current scale factor and next milestone
+POST	/api/payouts/request	Submit payout (min 1% profit)
+GET	/api/payouts/eligibility	Check payout eligibility with velocity limits
+POST	/api/promo/validate	Validate a promo code and return discount details
+GET	/api/promo/{code}/check	Check if a promo code is valid and active
+10. Kill Switches & Firm Protection
+Trigger	Threshold	Action
+Daily Firm Loss	2% of total firm capital	HALT_ALL_TRADING
+Account Correlation	20+ correlated accounts	SUSPEND_ACCOUNTS
+Drawdown Cascade	30% simultaneous drawdown	REVIEW_MODE
+Phase Skip Attempt	Any attempt to bypass Phase 1	IMMEDIATE_BAN
+Scale Abuse	Rapid scaling with minimal activity	FREEZE_SCALING + review
+10.1 Configuration Cooldown
+7-day cooldown: Same parameter combo blocked for 7 days after failure.
+Monthly limit: Maximum 3 configurations per calendar month.
+Post-funded change: Configuration change after funded status triggers full reset (both phases).
+11. Gamification & Trader Levels
+Same level system as One Step. Two Step-specific achievements:
+
+Achievement	Trigger	Reward
+First Payout	Complete first payout	+5% bonus on next challenge
+Consistent Trader	3 consecutive profitable months	Split +5%
+Risk Master	Risk score > 1.5 for 30 days	Fees -10%
+Diamond Hands	Never enter drawdown	Scaling bonus
+Phase Speedster	Pass both phases in < 50% of allowed time	Express badge + priority support
+10x Legend	Reach maximum 10x scaling	Lifetime VIP status
+12. One Step vs Two Step - Quick Comparison
+Feature	One Step	Two Step
+Evaluation Phases	1	2 (sequential)
+Base Price ($100K)	$499	$399
+Profit Target	5-15% single	P1: 5-12% + P2: 3-8%
+Daily Loss Range	2-8%	3-8%
+Max Loss Range	4-12%	6-15%
+Split Range	50-90%	70-90%
+Split Baseline	70%	80%
+Split Rate	$4 per %	$6 per %
+Min Days	3-10	5-20 (60/40 split)
+Max Scaling	5x	10x
+Min Payout	2% profit	1% profit
+Payout Freq Pricing	Monthly $0 / Bi-Weekly +$29 / Weekly +$59	Same
+News Trading	Conditional	Allowed (with buffer)
+Copy Trading	With verification	Unrestricted
+Intraday Loss Adj	-$15 each	-$19 each
+Static Loss Adj	+$25 each (premium)	+$29 each (premium)
+EOD Loss Adj	$0 each (baseline)	$0 each (baseline)
+Overnight Add-On	+$19	+$25
+Overweek Add-On	+$29	+$39
+Equal Loss Surcharge	+$100	+$100
+Promo Code Floor	Base * 0.3	Base * 0.3
+
+--- END OF DOCUMENT ---
